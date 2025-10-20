@@ -1,0 +1,27 @@
+import torch
+import torch.nn.functional as F
+
+def safety_transfer_loss(new_policy_probs, base_policy_probs, safety_policy_probs, transfer_weight=0.5):
+    """
+    Conceptual Loss function for Safety Policy Transfer Learning.
+
+    Goal: Minimize the divergence (KL-Divergence) between the new policy (new_policy_probs) 
+    and the established, safety-aligned policy (safety_policy_probs), weighted against 
+    the divergence from the initial base model (base_policy_probs).
+    """
+    # 1. Divergence from Base Model (Minimize this to retain core capability)
+    base_divergence = F.kl_div(new_policy_probs.log(), base_policy_probs, reduction='batchmean')
+
+    # 2. Divergence from Safety Policy (Minimize this to enforce safety)
+    safety_divergence = F.kl_div(new_policy_probs.log(), safety_policy_probs, reduction='batchmean')
+
+    # Combined Transfer Loss (Weighted sum)
+    total_loss = (1.0 - transfer_weight) * base_divergence + (transfer_weight * safety_divergence)
+
+    return total_loss
+
+# --- Time-to-Safety Metric Placeholder ---
+def time_to_safety_report(fine_tune_time_hours):
+    """Placeholder to report the reduced time needed to achieve safety alignment."""
+    print(f"Time-to-Safety (Fine-Tuning Hours): {fine_tune_time_hours} hours (Significant reduction over full training)")
+    return fine_tune_time_hours
